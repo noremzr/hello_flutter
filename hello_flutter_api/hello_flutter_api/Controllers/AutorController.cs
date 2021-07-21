@@ -16,7 +16,7 @@ using System.Web.Http;
     {
 
         AutorDAO userDAO = new AutorDAO(this.Conexao);
-        List<AutorModel> listaUsuarios = await userDAO.FindAll(new AutorFilter());
+        List<AutorModel> listaUsuarios = userDAO.FindAll(new AutorFilter());
         return listaUsuarios;
     }
         [HttpGet]
@@ -27,7 +27,7 @@ using System.Web.Http;
 
                 AutorFilter autorFilter = new AutorFilter((int)codAutor);
         AutorDAO autorDAO = new AutorDAO(this.Conexao);
-            AutorModel autor = await autorDAO.FindOne(autorFilter);
+            AutorModel autor = autorDAO.FindOne(autorFilter);
             if (autor is null)
             {
                 autor = new AutorModel(0,"","",false,"");
@@ -43,7 +43,7 @@ using System.Web.Http;
 
         AutorFilter autorFilter = new AutorFilter(nome);
         AutorDAO autorDAO = new AutorDAO(this.Conexao);
-        List<AutorModel> autores = await autorDAO.FindAll(autorFilter);
+        List<AutorModel> autores = autorDAO.FindAll(autorFilter);
         if (autores.Count <=0)
         {
             autores = new List<AutorModel>();
@@ -64,7 +64,7 @@ using System.Web.Http;
             AutorModel autorModel = new AutorModel(0,"", "", true, codDocumento);
             try
             {
-                await autorDAO.Delete(autorModel);
+                autorDAO.Delete(autorModel);
             }
             catch (Exception ex)
             {
@@ -89,7 +89,7 @@ using System.Web.Http;
             AutorDAO autorDAO = new AutorDAO(this.Conexao);
             try
             {
-                string erro = await autorDAO.Save(autor);
+                string erro = autorDAO.Save(autor);
             }
             catch (Exception ex)
             {

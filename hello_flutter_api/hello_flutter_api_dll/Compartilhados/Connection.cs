@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 public static class Connection
 {
-    public static SqlConnection DefaultConnection { get; set; } = null;
+    private static SqlConnection DefaultConnection { get; set; } = null;
     private static string connectionString = @"Server=MVTALESSANDRO\SQLEXPRESS;Database=Biblioteca;User Id=sa;Password=123;";
 
     public static SqlConnection GetConnection()

@@ -1,4 +1,3 @@
-C:\Users\movtech\Desktop\FlutterProject\hello_flutter\hello_flutter_api\hello_flutter_api_dll\obj\Debug\hello_flutter_api_dll_firestoreOld.csprojAssemblyReference.cache
 C:\Users\movtech\Desktop\FlutterProject\hello_flutter\hello_flutter_api\hello_flutter_api_dll\obj\Debug\hello_flutter_api_dll_firestoreOld.csproj.CoreCompileInputs.cache
 C:\Users\movtech\Desktop\FlutterProject\hello_flutter\hello_flutter_api\hello_flutter_api_dll\obj\Debug\hello_flutter_api_dll.dll
 C:\Users\movtech\Desktop\FlutterProject\hello_flutter\hello_flutter_api\hello_flutter_api_dll\obj\Debug\hello_flutter_api_dll.pdb

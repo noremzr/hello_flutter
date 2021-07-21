@@ -6,21 +6,22 @@ using System.Threading.Tasks;
 using Google.Cloud.Firestore;
 using System.Web.Http;
 using System.Diagnostics;
+using System.Data.SqlClient;
+
 public abstract class BaseController : ApiController
 {
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private FirestoreDb _conexao;
+    private SqlConnection _conexao;
 
 
 
-    public FirestoreDb Conexao
+    public SqlConnection Conexao
     {
         get
         {
             if (this._conexao == null)
             {
-                Connection con = new Connection();
-                this._conexao = con.DefaultConnection;
+                this._conexao = Connection.GetConnection();
                 return this._conexao;
             }
             return this.Conexao;

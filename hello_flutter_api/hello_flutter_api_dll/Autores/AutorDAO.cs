@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ public class AutorDAO : IDAO<AutorFilter, AutorModel>, IDAOSaveDelete<AutorModel
 {
 
 
-    public AutorDAO(FirestoreDb connection)
+    public AutorDAO(SqlConnection connection)
     {
         this.Connection = connection;
     }
@@ -19,7 +20,7 @@ public class AutorDAO : IDAO<AutorFilter, AutorModel>, IDAOSaveDelete<AutorModel
         get { return AutorModel.TableName; }
     }
 
-    public FirestoreDb Connection { get; set; }
+    public SqlConnection Connection { get; set; }
     public void ValidateFilter(AutorFilter autor)
     {
     }
@@ -32,61 +33,51 @@ public class AutorDAO : IDAO<AutorFilter, AutorModel>, IDAOSaveDelete<AutorModel
         }
     }
 
-    public async Task<string> Save(AutorModel autor)
+    public string Save(AutorModel autor)
     {
         DataMember<AutorModel> dataMember = new DataMember<AutorModel>();
-        string erro = await dataMember.Salvar(autor, Connection, this.TableName, autor.Existe);
+        string erro = DataMember<AutorModel>.Salvar(autor, Connection, this.TableName, autor.Existe);
         return erro;
     }
 
-    public async Task<string> Delete(AutorModel autor)
+    public string Delete(AutorModel autor)
     {
         DataMember<AutorModel> dataMember = new DataMember<AutorModel>();
 
-        string erro = await dataMember.DeleteByDocument(autor.CodDocumento, TableName, Connection);
-        return erro;
+        //string erro = DataMember<AutorModel>.(autor.CodDocumento, TableName, Connection);
+        return "";
     }
 
     public string GetSqlSelect(AutorFilter usuario)
     {
         this.ValidateFilter(usuario);
         StringBuilder sql = new StringBuilder();
-        sql.AppendLine("Select Exemplo não será usado!");
+        sql.AppendLine($"SELECT {DataMember<AutorModel>.getProperties(new AutorModel(),"Aut")}");
+        sql.AppendLine("FROM NrmAutor");
+
         return sql.ToString();
     }
 
-    public async Task<List<AutorModel>> FindAll(AutorFilter autorFilter)
+    public List<AutorModel> FindAll(AutorFilter autorFilter)
     {
-        Query Qref = GetQuery(autorFilter);
-        QuerySnapshot snap = await Qref.GetSnapshotAsync();
-        List<AutorModel> ListaAutores = new List<AutorModel>();
-        foreach (DocumentSnapshot docsnap in snap)
+        string sql = GetSqlSelect(autorFilter);
+        List<AutorModel> listaAutores = new List<AutorModel>();
+        using (SqlCommand cmd = new SqlCommand(sql,Connection))
         {
-            AutorModel autor = docsnap.ConvertTo<AutorModel>();
-            if (docsnap.Exists)
-            {
-                autor.CodDocumento = docsnap.Id;
-                ListaAutores.Add(autor);
+            using (IDataReader dr = cmd.ExecuteReader()) {
+                AutorModel autor = new AutorModel();
+                DataMember<AutorModel>.PopulateObject(dr, autor);
+                listaAutores.Add(autor);
             }
         }
-        return ListaAutores;
+       
+        return listaAutores;
     }
 
-    public async Task<AutorModel> FindOne(AutorFilter usuarioFilter)
+    public AutorModel FindOne(AutorFilter usuarioFilter)
     {
-        List<AutorModel> autores = await this.FindAll(usuarioFilter);
+        List<AutorModel> autores = this.FindAll(usuarioFilter);
         return autores.FirstOrDefault();
-    }
-
-    private Query GetQuery(AutorFilter autorFilter)
-    {
-        Query Qref = Connection.Collection(TableName);
-        AutorModel autor = new AutorModel();
-        if (!string.IsNullOrEmpty(autorFilter.Nome))
-        {
-            Qref = Qref.OrderBy(autor.NomeDM.DataMemberName).StartAt(autorFilter.Nome).EndAt(autorFilter.Nome+'\uf8ff').Limit(50);
-        }
-        return Qref;
     }
 
     public AutorModel LoadObject(IDataReader dataReader)

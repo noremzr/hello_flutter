@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ using Google.Cloud.Firestore;
     {
 
 
-        public UserDAO(FirestoreDb connection)
+        public UserDAO(SqlConnection connection)
         {
             this.Connection = connection;
         }
@@ -19,7 +20,7 @@ using Google.Cloud.Firestore;
             get { return UserModel.TableName; }
         }
 
-        public FirestoreDb Connection { get; set; }
+        public SqlConnection Connection { get; set; }
         public void ValidateFilter(UserFilter usuario)
         {
         }
@@ -36,61 +37,51 @@ using Google.Cloud.Firestore;
             }
         }
 
-        public async Task<string> Save(UserModel usuario)
+        public string Save(UserModel usuario)
         {
             DataMember<UserModel> dataMember = new DataMember<UserModel>();
-            string erro = await dataMember.Salvar(usuario, Connection, this.TableName, usuario.Existe);
+           string erro =  DataMember<UserModel>.Salvar(usuario, Connection, this.TableName, usuario.Existe);
             return erro;
         }
 
-        public async Task<string> Delete(UserModel usuario)
+        public string Delete(UserModel usuario)
         {
-        DataMember<UserModel> dataMember = new DataMember<UserModel>();
-
-        string erro = await dataMember.DeleteByDocument(usuario.CodDocumento,TableName,Connection);
-        return erro;
+        return "";
         }
 
         public string GetSqlSelect(UserFilter usuario)
         {
             this.ValidateFilter(usuario);
-            StringBuilder sql = new StringBuilder();
-            sql.AppendLine("Select Exemplo não será usado!");
-            return sql.ToString();
-        }
+        StringBuilder sql = new StringBuilder();
+        sql.AppendLine($"SELECT {DataMember<UserModel>.getProperties(new UserModel(), "Aut")}");
+        sql.AppendLine(" FROM tUsuario Aut");
 
-        public async Task<List<UserModel>> FindAll(UserFilter usuarioFilter)
+        return sql.ToString();
+    }
+
+        public List<UserModel> FindAll(UserFilter usuarioFilter)
         {
-            Query Qref = GetQuery(usuarioFilter);
-            QuerySnapshot snap = await Qref.GetSnapshotAsync();
-            List<UserModel> ListaUsuarios = new List<UserModel>();
-            foreach (DocumentSnapshot docsnap in snap)
+        string sql = GetSqlSelect(usuarioFilter);
+        List<UserModel> listaAutores = new List<UserModel>();
+        using (SqlCommand cmd = new SqlCommand(sql, Connection))
+        {
+            using (IDataReader dr = cmd.ExecuteReader())
             {
-            UserModel usuario = docsnap.ConvertTo<UserModel>();
-                if (docsnap.Exists)
-                {
-                    usuario.CodDocumento = docsnap.Id;
-                    ListaUsuarios.Add(usuario);
+                while (dr.Read()) { 
+                UserModel autor = new UserModel();
+                DataMember<UserModel>.PopulateObject(dr, autor);
+                listaAutores.Add(autor);
                 }
             }
-            return ListaUsuarios;
         }
 
-        public async Task<UserModel> FindOne(UserFilter usuarioFilter)
+        return listaAutores;
+    }
+
+        public UserModel FindOne(UserFilter usuarioFilter)
         {
-            List<UserModel> usuarios = await this.FindAll(usuarioFilter);
+            List<UserModel> usuarios =  this.FindAll(usuarioFilter);
             return usuarios.FirstOrDefault();
-        }
-
-        private Query GetQuery(UserFilter usuarioFilter)
-        {
-            Query Qref = Connection.Collection(TableName);
-        UserModel usuario = new UserModel();
-            if (!string.IsNullOrEmpty(usuarioFilter.Usuario))
-            {
-                Qref = Qref.WhereEqualTo(usuario.usuarioDM.DataMemberName, usuarioFilter.Usuario);
-            }
-            return Qref;
         }
 
         public UserModel LoadObject(IDataReader dataReader)

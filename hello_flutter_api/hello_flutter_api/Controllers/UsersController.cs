@@ -16,22 +16,22 @@ namespace hello_flutter_api.Controllers
         //[Authorize()]
         [HttpGet]
         [Route("GetUsers")]
-        public async Task<List<UserModel>> GetUsers() {
+        public List<UserModel> GetUsers() {
 
             UserDAO userDAO = new UserDAO(this.Conexao);
-            List<UserModel> listaUsuarios = await userDAO.FindAll(new UserFilter());
+            List<UserModel> listaUsuarios = userDAO.FindAll(new UserFilter());
             return listaUsuarios;
         }
 
         [HttpGet]
         [Route("GetUser/{codUsuario}")]
-        public async Task<UserModel> GetUser(string codUsuario)
+        public UserModel GetUser(string codUsuario)
         {
             if (string.IsNullOrEmpty(codUsuario)){ throw new ArgumentException("usuario"); }
 
             UserFilter userFilter = new UserFilter(codUsuario);
             UserDAO userDAO = new UserDAO(this.Conexao);
-            UserModel usuario = await userDAO.FindOne(userFilter);
+            UserModel usuario = userDAO.FindOne(userFilter);
             if (usuario is null) {
                 usuario = new UserModel();
             }
@@ -40,13 +40,13 @@ namespace hello_flutter_api.Controllers
 
         [HttpPost]
         [Route("ValidateUser")]
-        public async Task<UserValidatorModel> ValidateUser([FromBody] UserModel usuarioLogin)
+        public UserValidatorModel ValidateUser([FromBody] UserModel usuarioLogin)
         {
             if (usuarioLogin is null) { throw new ArgumentException("usuario"); }
 
             UserFilter userFilter = new UserFilter(usuarioLogin.usuario);
             UserDAO userDAO = new UserDAO(this.Conexao);
-            UserModel usuario = await userDAO.FindOne(userFilter);
+            UserModel usuario = userDAO.FindOne(userFilter);
 
             bool usuarioNaoExiste = false;
             bool senhasDiferentes = false;
@@ -64,7 +64,7 @@ namespace hello_flutter_api.Controllers
 
         [HttpGet]
         [Route("DeleteUser/{codDocumento}")]
-        public async Task<int> DeleteUser(string codDocumento) {
+        public int DeleteUser(string codDocumento) {
             int codRetorno = 200;
 
 
@@ -74,7 +74,7 @@ namespace hello_flutter_api.Controllers
             UserModel userModel = new UserModel("", "", true,codDocumento);
             try
             {
-                await userDAO.Delete(userModel);
+                userDAO.Delete(userModel);
             }
             catch (Exception ex) {
                 codRetorno = 501;
@@ -88,7 +88,7 @@ namespace hello_flutter_api.Controllers
         //[Authorize()]
         [HttpPost]
         [Route("PostUser")]
-        public async Task<int> PostUser([FromBody] UserModel usuario)
+        public int PostUser([FromBody] UserModel usuario)
         {
             int codRetorno = 200;
             if (usuario == null) {
@@ -96,7 +96,7 @@ namespace hello_flutter_api.Controllers
             }
             UserDAO userDAO = new UserDAO(this.Conexao);
             try {
-                string erro = await userDAO.Save(usuario);
+                string erro = userDAO.Save(usuario);
             }
             catch(Exception ex) {
                 codRetorno = 500;
